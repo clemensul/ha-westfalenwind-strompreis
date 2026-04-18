@@ -21,6 +21,113 @@ Zusatzlich enthalten beide Entitäten diese Attribute:
 - entries: Anzahl der Forecast-Einträge
 - refresh_schedule: die geplanten Abrufzeiten pro Tag
 
+### Beispiel Visualisierung
+
+Mit zum Beispiel [Apex Charts](https://github.com/RomRider/apexcharts-card) kann man den Preisverlauf für den aktuellen Tag visualisieren:
+
+![Eine X-Y-Grafik die den Verlauf des Preises beider Tarife über den aktuellen Tag zeigt](docs/assets/apex-charts-visualisation.png)
+
+<details>
+
+<summary>Code für die Visualisierung</summary>
+
+``` yaml
+type: custom:apexcharts-card
+header:
+  title: Strompreis heute
+  show: true
+  show_states: true
+  colorize_states: true
+apex_config:
+  chart:
+    height: 300px
+  tooltip:
+    enabled: true
+    shared: true
+    followCursor: true
+  annotations:
+    xaxis:
+      - x: EVAL:Date.now()
+        borderColor: red
+        label:
+          text: Jetzt
+          position: top
+          borderWidth: 1
+          style:
+            background: white
+graph_span: 24h
+span:
+  start: day
+yaxis:
+  - id: price
+    show: true
+    min: 0
+    decimals: 2
+    apex_config:
+      tickAmount: 10
+  - id: header_only
+    show: false
+series:
+  - entity: sensor.westfalenwind_smart_strompreis_forecast
+    name: Forecast (Smart)
+    color: blue
+    opacity: 0.2
+    stroke_width: 1
+    type: area
+    curve: stepline
+    float_precision: 2
+    extend_to: end
+    yaxis_id: price
+    unit: ct/kWh
+    show:
+      legend_value: true
+      in_header: false
+    data_generator: |
+      return entity.attributes.forecast.map((entry) => {
+            return [new Date(entry.start), entry.price_ct_kwh];
+          });
+  - entity: sensor.westfalenwind_flex_strompreis_forecast
+    name: Forecast (Flex)
+    color: darkgreen
+    opacity: 0.2
+    stroke_width: 1
+    type: area
+    curve: stepline
+    float_precision: 2
+    extend_to: end
+    yaxis_id: price
+    unit: ct/kWh
+    show:
+      legend_value: true
+      in_header: false
+    data_generator: |
+      return entity.attributes.forecast.map((entry) => {
+            return [new Date(entry.start), entry.price_ct_kwh];
+          });
+  - entity: sensor.westfalenwind_flex_strompreis_forecast
+    yaxis_id: header_only
+    name: Flex Preis jetzt
+    stroke_width: 2
+    color: darkgreen
+    float_precision: 2
+    show:
+      legend_value: true
+      in_header: true
+      in_chart: false
+  - entity: sensor.westfalenwind_smart_strompreis_forecast
+    yaxis_id: header_only
+    name: Smart Preis jetzt
+    color: blue
+    float_precision: 2
+    show:
+      legend_value: true
+      in_header: true
+      in_chart: false
+
+```
+
+</details>
+
 ### Einrichtung
 
 #### Installation über HACS
