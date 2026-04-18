@@ -1,0 +1,16 @@
+# Home Assistant runtime/state
+.storage/
+.cache/
+home-assistant.log
+home-assistant.log.*
+home-assistant_v2.db*
+.HA_VERSION
+.ha_run.lock
+*.yaml
+
+# Python cache/artifacts
+**/__pycache__/
+*.py[cod]
+
+# OS/editor noise
+.DS_Store

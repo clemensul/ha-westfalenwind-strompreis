@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -eu
+
+# Installiert Home Assistant im Devcontainer fuer lokale Integrationstests.
+python3 -m pip install --user --upgrade pip setuptools wheel
+python3 -m pip install --user homeassistant
+
+# Macht die lokal installierten Python-Tools in neuen Shells direkt verfuegbar.
+profile_file="$HOME/.profile"
+path_export='export PATH="$HOME/.local/bin:$PATH"'
+if ! grep -Fq "$path_export" "$profile_file" 2>/dev/null; then
+    printf '\n%s\n' "$path_export" >> "$profile_file"
+fi
+
+printf '\nSetup abgeschlossen. Starte Home Assistant spaeter mit: hass -c .\n'
