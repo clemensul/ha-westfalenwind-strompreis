@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import logging
-from typing import Any
 from datetime import datetime
+from typing import Any
 
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.data_entry_flow import FlowResult
+from homeassistant.config_entries import ConfigFlowResult
 
 from .const import (
     CONF_FETCH_TIME,
@@ -17,8 +16,6 @@ from .const import (
     DOMAIN,
     SUPPORTED_UPDATES_PER_DAY,
 )
-
-_LOGGER = logging.getLogger(__name__)
 
 
 def _is_valid_fetch_time(value: str) -> bool:
@@ -80,7 +77,7 @@ class WestfalenwindConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self,
         user_input: dict[str, Any] | None = None,
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Erstellt den Entry mit konfigurierbarem Abrufplan."""
         await self.async_set_unique_id(DOMAIN, raise_on_progress=False)
         self._abort_if_unique_id_configured()
@@ -125,7 +122,7 @@ class WestfalenwindOptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(
         self,
         user_input: dict[str, Any] | None = None,
-    ) -> FlowResult:
+    ) -> ConfigFlowResult:
         """Zeigt und speichert Optionen fuer den Abrufplan."""
         errors: dict[str, str] = {}
 

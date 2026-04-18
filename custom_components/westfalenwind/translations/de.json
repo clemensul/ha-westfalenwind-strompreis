@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WestfalenWind Strompreis einrichten",
+        "description": "Lege fest, wann die Prognosen aktualisiert werden sollen.",
+        "data": {
+          "fetch_time": "Erste Aktualisierungszeit",
+          "updates_per_day": "Aktualisierungen pro Tag"
+        }
+      }
+    },
+    "error": {
+      "invalid_time_format": "Bitte gib die Uhrzeit im Format HH:MM ein.",
+      "invalid_updates_per_day": "Bitte wähle eine unterstützte Anzahl von Aktualisierungen pro Tag."
+    },
+    "abort": {
+      "single_instance_allowed": "Es ist nur eine Konfiguration für WestfalenWind Strompreis erlaubt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Optionen für WestfalenWind Strompreis",
+        "description": "Passe den Aktualisierungsplan für die Prognosen an.",
+        "data": {
+          "fetch_time": "Erste Aktualisierungszeit",
+          "updates_per_day": "Aktualisierungen pro Tag"
+        }
+      }
+    },
+    "error": {
+      "invalid_time_format": "Bitte gib die Uhrzeit im Format HH:MM ein.",
+      "invalid_updates_per_day": "Bitte wähle eine unterstützte Anzahl von Aktualisierungen pro Tag."
+    }
+  }
+}

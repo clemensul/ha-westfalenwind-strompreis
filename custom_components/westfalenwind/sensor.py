@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import logging
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
+from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -11,8 +10,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
 from .coordinator import WestfalenwindCoordinator, WestfalenwindDynamicCoordinator
-
-_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -29,47 +26,18 @@ async def async_setup_entry(
     ]["dynamic_coordinator"]
     async_add_entities(
         [
-            WestfalenwindSensor(coordinator),
-            WestfalenwindForecastSensor(coordinator),
-            WestfalenwindDynamicSensor(dynamic_coordinator),
-            WestfalenwindDynamicForecastSensor(dynamic_coordinator),
+            WestfalenwindSmartForecastSensor(coordinator),
+            WestfalenwindFlexForecastSensor(dynamic_coordinator),
         ]
     )
 
 
-class WestfalenwindSensor(CoordinatorEntity[WestfalenwindCoordinator], SensorEntity):
-    """Sensor fuer den aktuell gueltigen Westfalenwind-Strompreis."""
-
-    _attr_name = "Westfalenwind Strompreis"
-    _attr_unique_id = "westfalenwind_current_price"
-    _attr_native_unit_of_measurement = "ct/kWh"
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_icon = "mdi:lightning-bolt"
-
-    # MONETARY wird absichtlich nicht gesetzt, da ct/kWh keine reine Waehrung ist.
-
-    @property
-    def native_value(self) -> float | None:
-        """Liefert den aktuellen Preis in ct/kWh."""
-        return self.coordinator.data
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Liefert Zusatzdaten zum aktuell gueltigen Preisintervall."""
-        return {
-            "tariff_name": self.coordinator.current_tariff_name,
-            "valid_from": self.coordinator.current_valid_from,
-            "valid_until": self.coordinator.current_valid_until,
-            "refresh_schedule": self.coordinator.refresh_schedule,
-        }
-
-
-class WestfalenwindForecastSensor(
+class WestfalenwindSmartForecastSensor(
     CoordinatorEntity[WestfalenwindCoordinator], SensorEntity
 ):
-    """Sensor mit den geladenen Forecast-Daten des Standardtarifs."""
+    """Forecast-Sensor fuer den Tarif WWS Hochstift Smart."""
 
-    _attr_name = "Westfalenwind Strompreis Forecast"
+    _attr_name = "WestfalenWind Smart Strompreis"
     _attr_unique_id = "westfalenwind_price_forecast"
     _attr_native_unit_of_measurement = "ct/kWh"
     _attr_icon = "mdi:chart-timeline-variant"
@@ -98,39 +66,12 @@ class WestfalenwindForecastSensor(
         }
 
 
-class WestfalenwindDynamicSensor(
+class WestfalenwindFlexForecastSensor(
     CoordinatorEntity[WestfalenwindDynamicCoordinator], SensorEntity
 ):
-    """Sensor fuer den voll dynamischen Westfalenwind-Strompreis."""
+    """Forecast-Sensor fuer den Tarif WWS Hochstift Flex."""
 
-    _attr_name = "Westfalenwind Dynamischer Strompreis"
-    _attr_unique_id = "westfalenwind_dynamic_price"
-    _attr_native_unit_of_measurement = "ct/kWh"
-    _attr_state_class = SensorStateClass.MEASUREMENT
-    _attr_icon = "mdi:lightning-bolt"
-
-    @property
-    def native_value(self) -> float | None:
-        """Liefert den aktuellen dynamischen Preis in ct/kWh."""
-        return self.coordinator.data
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Liefert Zusatzdaten zum aktuell gueltigen dynamischen Preisintervall."""
-        return {
-            "tariff_name": self.coordinator.current_tariff_name,
-            "valid_from": self.coordinator.current_valid_from,
-            "valid_until": self.coordinator.current_valid_until,
-            "refresh_schedule": self.coordinator.refresh_schedule,
-        }
-
-
-class WestfalenwindDynamicForecastSensor(
-    CoordinatorEntity[WestfalenwindDynamicCoordinator], SensorEntity
-):
-    """Sensor mit den geladenen Forecast-Daten des dynamischen Tarifs."""
-
-    _attr_name = "Westfalenwind Dynamischer Strompreis Forecast"
+    _attr_name = "WestfalenWind Flex Strompreis"
     _attr_unique_id = "westfalenwind_dynamic_price_forecast"
     _attr_native_unit_of_measurement = "ct/kWh"
     _attr_icon = "mdi:chart-timeline-variant"

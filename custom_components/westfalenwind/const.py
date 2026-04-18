@@ -5,13 +5,13 @@ from datetime import timedelta
 from homeassistant.const import Platform
 
 DOMAIN: str = "westfalenwind"
-API_URL: str = "https://www.westfalenwind.de/?type=1772708565"
-DYNAMIC_API_URL: str = "https://www.westfalenwind.de/?type=1772708560"
+SMART_API_URL: str = "https://www.westfalenwind.de/?type=1772708565"
+FLEX_API_URL: str = "https://www.westfalenwind.de/?type=1772708560"
 SCAN_INTERVAL: timedelta = timedelta(minutes=15)
 CONF_FETCH_TIME: str = "fetch_time"
 CONF_UPDATES_PER_DAY: str = "updates_per_day"
 DEFAULT_FETCH_TIME: str = "00:01"
-DEFAULT_UPDATES_PER_DAY: int = 24
+DEFAULT_UPDATES_PER_DAY: int = 1
 SUPPORTED_UPDATES_PER_DAY: list[int] = [
     1,
     2,

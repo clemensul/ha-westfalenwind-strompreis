@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up WestfalenWind Strompreis",
+        "description": "Configure when the forecasts should be refreshed.",
+        "data": {
+          "fetch_time": "First refresh time",
+          "updates_per_day": "Refreshes per day"
+        }
+      }
+    },
+    "error": {
+      "invalid_time_format": "Enter the time in HH:MM format.",
+      "invalid_updates_per_day": "Select a supported number of refreshes per day."
+    },
+    "abort": {
+      "single_instance_allowed": "Only one configuration of WestfalenWind Strompreis is allowed."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WestfalenWind Strompreis options",
+        "description": "Adjust the refresh schedule for the forecasts.",
+        "data": {
+          "fetch_time": "First refresh time",
+          "updates_per_day": "Refreshes per day"
+        }
+      }
+    },
+    "error": {
+      "invalid_time_format": "Enter the time in HH:MM format.",
+      "invalid_updates_per_day": "Select a supported number of refreshes per day."
+    }
+  }
+}

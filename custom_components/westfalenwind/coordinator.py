@@ -14,13 +14,13 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .const import (
-    API_URL,
+    SMART_API_URL,
     CONF_FETCH_TIME,
     CONF_UPDATES_PER_DAY,
     DEFAULT_FETCH_TIME,
     DEFAULT_UPDATES_PER_DAY,
     DOMAIN,
-    DYNAMIC_API_URL,
+    FLEX_API_URL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -180,7 +180,7 @@ class WestfalenwindCoordinator(DataUpdateCoordinator[float | None]):
         """Laedt Tagesdaten und liefert den aktuell gueltigen Preis in ct/kWh."""
         try:
             async with self._session.get(
-                API_URL,
+                SMART_API_URL,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as response:
                 response.raise_for_status()
@@ -354,7 +354,7 @@ class WestfalenwindDynamicCoordinator(DataUpdateCoordinator[float | None]):
         """Laedt Daten von der dynamischen API und liefert den Preis in ct/kWh."""
         try:
             async with self._session.get(
-                DYNAMIC_API_URL,
+                FLEX_API_URL,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as response:
                 response.raise_for_status()
