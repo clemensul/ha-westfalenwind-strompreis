@@ -9,7 +9,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import WestfalenwindCoordinator, WestfalenwindDynamicCoordinator
+from .coordinator import WestfalenwindSmartCoordinator, WestfalenwindFlexCoordinator
 
 
 async def async_setup_entry(
@@ -18,10 +18,10 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Richtet den Sensor fuer den Config Entry ein."""
-    coordinator: WestfalenwindCoordinator = hass.data[DOMAIN][entry.entry_id][
+    coordinator: WestfalenwindSmartCoordinator = hass.data[DOMAIN][entry.entry_id][
         "coordinator"
     ]
-    dynamic_coordinator: WestfalenwindDynamicCoordinator = hass.data[DOMAIN][
+    dynamic_coordinator: WestfalenwindFlexCoordinator = hass.data[DOMAIN][
         entry.entry_id
     ]["dynamic_coordinator"]
     async_add_entities(
@@ -33,7 +33,7 @@ async def async_setup_entry(
 
 
 class WestfalenwindSmartForecastSensor(
-    CoordinatorEntity[WestfalenwindCoordinator], SensorEntity
+    CoordinatorEntity[WestfalenwindSmartCoordinator], SensorEntity
 ):
     """Forecast-Sensor fuer den Tarif WWS Hochstift Smart."""
 
@@ -44,17 +44,8 @@ class WestfalenwindSmartForecastSensor(
 
     @property
     def native_value(self) -> float | None:
-        """Liefert den Preis des naechsten Intervalls als kompakten Forecast-Wert."""
-        now = self.coordinator.current_valid_until
-        if now is None:
-            return None
-
-        for entry in self.coordinator.forecast:
-            if entry.get("start") == now:
-                price = entry.get("price_ct_kwh")
-                return price if isinstance(price, float) else None
-
-        return None
+        """Liefert den aktuell gueltigen Preis in ct/kWh."""
+        return self.coordinator.data
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -67,7 +58,7 @@ class WestfalenwindSmartForecastSensor(
 
 
 class WestfalenwindFlexForecastSensor(
-    CoordinatorEntity[WestfalenwindDynamicCoordinator], SensorEntity
+    CoordinatorEntity[WestfalenwindFlexCoordinator], SensorEntity
 ):
     """Forecast-Sensor fuer den Tarif WWS Hochstift Flex."""
 
@@ -78,17 +69,8 @@ class WestfalenwindFlexForecastSensor(
 
     @property
     def native_value(self) -> float | None:
-        """Liefert den Preis des naechsten Intervalls als kompakten Forecast-Wert."""
-        now = self.coordinator.current_valid_until
-        if now is None:
-            return None
-
-        for entry in self.coordinator.forecast:
-            if entry.get("start") == now:
-                price = entry.get("price_ct_kwh")
-                return price if isinstance(price, float) else None
-
-        return None
+        """Liefert den aktuell gueltigen Preis in ct/kWh."""
+        return self.coordinator.data
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

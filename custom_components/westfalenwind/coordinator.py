@@ -91,8 +91,31 @@ def _compress_forecast_entries(
     return compressed, current_entry
 
 
-class WestfalenwindCoordinator(DataUpdateCoordinator[float | None]):
-    """Liest Standard-Preisdaten und bestimmt den aktuell gueltigen Preis."""
+def _find_current_entry(
+    entries: list[dict[str, Any]],
+    now_utc: datetime,
+) -> dict[str, Any] | None:
+    """Findet das aktuell gueltige Intervall im bereits geladenen Forecast."""
+    for entry in entries:
+        start_raw = entry.get("start")
+        end_raw = entry.get("end")
+        if not isinstance(start_raw, str) or not isinstance(end_raw, str):
+            continue
+
+        try:
+            start_dt = datetime.fromisoformat(start_raw)
+            end_dt = datetime.fromisoformat(end_raw)
+        except ValueError:
+            continue
+
+        if start_dt <= now_utc < end_dt:
+            return entry
+
+    return None
+
+
+class WestfalenwindSmartCoordinator(DataUpdateCoordinator[float | None]):
+    """Liest Smart-Preisdaten und bestimmt den aktuell gueltigen Preis."""
 
     def __init__(self, hass: HomeAssistant, options: dict[str, Any]) -> None:
         super().__init__(
@@ -159,6 +182,9 @@ class WestfalenwindCoordinator(DataUpdateCoordinator[float | None]):
         async def _trigger_refresh(_: datetime) -> None:
             await self.async_request_refresh()
 
+        async def _trigger_local_price_refresh(_: datetime) -> None:
+            self._refresh_current_from_cached_forecast()
+
         for hour, minute in schedule:
             self._unsub_refresh_callbacks.append(
                 async_track_time_change(
@@ -169,6 +195,57 @@ class WestfalenwindCoordinator(DataUpdateCoordinator[float | None]):
                     second=0,
                 )
             )
+
+        # Zwischen API-Abrufen den aktuellen Preis aus dem Forecast fortschreiben.
+        self._unsub_refresh_callbacks.append(
+            async_track_time_change(
+                self.hass,
+                _trigger_local_price_refresh,
+                minute=[0, 15, 30, 45],
+                second=0,
+            )
+        )
+
+    def _refresh_current_from_cached_forecast(self) -> None:
+        """Aktualisiert den aktuellen Preis aus geladenen Forecast-Daten."""
+        now_utc = datetime.now(timezone.utc)
+        current_entry = _find_current_entry(self.forecast, now_utc)
+
+        if current_entry is None:
+            if (
+                self.data is not None
+                or self.current_tariff_name is not None
+                or self.current_valid_from is not None
+                or self.current_valid_until is not None
+            ):
+                self.current_tariff_name = None
+                self.current_valid_from = None
+                self.current_valid_until = None
+                self.async_set_updated_data(None)
+            return
+
+        new_tariff = current_entry.get("tariff_name")
+        new_valid_from = current_entry.get("start")
+        new_valid_until = current_entry.get("end")
+        new_price_raw = current_entry.get("price_ct_kwh")
+        new_price = new_price_raw if isinstance(new_price_raw, float) else None
+
+        if (
+            self.data != new_price
+            or self.current_tariff_name != new_tariff
+            or self.current_valid_from != new_valid_from
+            or self.current_valid_until != new_valid_until
+        ):
+            self.current_tariff_name = (
+                new_tariff if isinstance(new_tariff, str) else None
+            )
+            self.current_valid_from = (
+                new_valid_from if isinstance(new_valid_from, str) else None
+            )
+            self.current_valid_until = (
+                new_valid_until if isinstance(new_valid_until, str) else None
+            )
+            self.async_set_updated_data(new_price)
 
     async def async_shutdown(self) -> None:
         """Raeumt geplante Zeit-Callbacks auf."""
@@ -181,7 +258,7 @@ class WestfalenwindCoordinator(DataUpdateCoordinator[float | None]):
         try:
             async with self._session.get(
                 SMART_API_URL,
-                timeout=aiohttp.ClientTimeout(total=15),
+                timeout=aiohttp.ClientTimeout(total=20),
             ) as response:
                 response.raise_for_status()
                 payload_raw: Any = await response.json(content_type=None)
@@ -265,8 +342,8 @@ class WestfalenwindCoordinator(DataUpdateCoordinator[float | None]):
         return current_price
 
 
-class WestfalenwindDynamicCoordinator(DataUpdateCoordinator[float | None]):
-    """Liest den voll dynamischen Strompreis."""
+class WestfalenwindFlexCoordinator(DataUpdateCoordinator[float | None]):
+    """Liest den Flex Strompreis."""
 
     def __init__(self, hass: HomeAssistant, options: dict[str, Any]) -> None:
         super().__init__(
@@ -333,6 +410,9 @@ class WestfalenwindDynamicCoordinator(DataUpdateCoordinator[float | None]):
         async def _trigger_refresh(_: datetime) -> None:
             await self.async_request_refresh()
 
+        async def _trigger_local_price_refresh(_: datetime) -> None:
+            self._refresh_current_from_cached_forecast()
+
         for hour, minute in schedule:
             self._unsub_refresh_callbacks.append(
                 async_track_time_change(
@@ -343,6 +423,57 @@ class WestfalenwindDynamicCoordinator(DataUpdateCoordinator[float | None]):
                     second=0,
                 )
             )
+
+        # Zwischen API-Abrufen den aktuellen Preis aus dem Forecast fortschreiben.
+        self._unsub_refresh_callbacks.append(
+            async_track_time_change(
+                self.hass,
+                _trigger_local_price_refresh,
+                minute=[0, 15, 30, 45],
+                second=0,
+            )
+        )
+
+    def _refresh_current_from_cached_forecast(self) -> None:
+        """Aktualisiert den aktuellen Preis aus geladenen Forecast-Daten."""
+        now_utc = datetime.now(timezone.utc)
+        current_entry = _find_current_entry(self.forecast, now_utc)
+
+        if current_entry is None:
+            if (
+                self.data is not None
+                or self.current_tariff_name is not None
+                or self.current_valid_from is not None
+                or self.current_valid_until is not None
+            ):
+                self.current_tariff_name = None
+                self.current_valid_from = None
+                self.current_valid_until = None
+                self.async_set_updated_data(None)
+            return
+
+        new_tariff = current_entry.get("tariff_name")
+        new_valid_from = current_entry.get("start")
+        new_valid_until = current_entry.get("end")
+        new_price_raw = current_entry.get("price_ct_kwh")
+        new_price = new_price_raw if isinstance(new_price_raw, float) else None
+
+        if (
+            self.data != new_price
+            or self.current_tariff_name != new_tariff
+            or self.current_valid_from != new_valid_from
+            or self.current_valid_until != new_valid_until
+        ):
+            self.current_tariff_name = (
+                new_tariff if isinstance(new_tariff, str) else None
+            )
+            self.current_valid_from = (
+                new_valid_from if isinstance(new_valid_from, str) else None
+            )
+            self.current_valid_until = (
+                new_valid_until if isinstance(new_valid_until, str) else None
+            )
+            self.async_set_updated_data(new_price)
 
     async def async_shutdown(self) -> None:
         """Raeumt geplante Zeit-Callbacks auf."""
@@ -355,7 +486,7 @@ class WestfalenwindDynamicCoordinator(DataUpdateCoordinator[float | None]):
         try:
             async with self._session.get(
                 FLEX_API_URL,
-                timeout=aiohttp.ClientTimeout(total=15),
+                timeout=aiohttp.ClientTimeout(total=20),
             ) as response:
                 response.raise_for_status()
                 payload: Any = await response.json(content_type=None)

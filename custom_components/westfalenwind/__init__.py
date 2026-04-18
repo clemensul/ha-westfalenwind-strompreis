@@ -6,15 +6,15 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, PLATFORMS
-from .coordinator import WestfalenwindCoordinator, WestfalenwindDynamicCoordinator
+from .coordinator import WestfalenwindSmartCoordinator, WestfalenwindFlexCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Richtet einen Config Entry der Integration ein."""
-    coordinator = WestfalenwindCoordinator(hass, dict(entry.options))
-    dynamic_coordinator = WestfalenwindDynamicCoordinator(hass, dict(entry.options))
+    coordinator = WestfalenwindSmartCoordinator(hass, dict(entry.options))
+    dynamic_coordinator = WestfalenwindFlexCoordinator(hass, dict(entry.options))
     await coordinator.async_config_entry_first_refresh()
     await dynamic_coordinator.async_config_entry_first_refresh()
 
@@ -36,8 +36,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry_data = hass.data[DOMAIN][entry.entry_id]
     entry_data["update_listener"]()
 
-    coordinator: WestfalenwindCoordinator = entry_data["coordinator"]
-    dynamic_coordinator: WestfalenwindDynamicCoordinator = entry_data[
+    coordinator: WestfalenwindSmartCoordinator = entry_data["coordinator"]
+    dynamic_coordinator: WestfalenwindFlexCoordinator = entry_data[
         "dynamic_coordinator"
     ]
     await coordinator.async_shutdown()

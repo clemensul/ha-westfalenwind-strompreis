@@ -1,6 +1,6 @@
 {
   "name": "Westfalenwind Strompreis",
   "render_readme": true,
-  "country": "DE",
+  "country": ["DE", "EN"],
   "homeassistant": "2024.1.0"
 }
