@@ -13,11 +13,11 @@ Nach der Einrichtung erscheinen zwei Sensoren in Home Assistant:
 - WestfalenWind Smart Strompreis
 - WestfalenWind Flex Strompreis
 
-Beide Sensoren zeigen den Preis des nächsten gültigen Intervalls in ct/kWh an. Damit eignen sie sich gut für Automationen, Dashboards und Preisvergleiche zwischen Smart und Flex.
+Beide Sensoren zeigen den Preis des aktuellen Intervalls in ct/kWh an. Damit eignen sie sich gut für Automationen, Dashboards und Preisvergleiche zwischen Smart und Flex.
 
 Zusatzlich enthalten beide Entitäten diese Attribute:
 
-- forecast: die geladenen Preisintervalle in komprimierter Form
+- forecast: die geladenen Preisintervalle in komprimierter Form (Intervalle mit gleichem Preis zusammengefasst)
 - entries: Anzahl der Forecast-Einträge
 - refresh_schedule: die geplanten Abrufzeiten pro Tag
 
@@ -152,7 +152,7 @@ In den Optionen der Integration kannst du den Abrufplan anpassen:
 - fetch_time: erste lokale Abrufzeit im Format HH:MM
 - updates_per_day: Anzahl der API-Abrufe pro Tag
 
-Der Standardwert ist 00:01 Uhr bei 1 Abruf pro Tag (der Forecast sollte sich über den Tag nach meiner Einschätzung nicht verändern).
+Der Standardwert ist 00:01 Uhr bei 1 Abruf pro Tag (der Forecast sollte sich über den Tag nach meiner Einschätzung nicht verändern, sodass ein Anruf genügt).
 
 ## Für Entwickler
 
@@ -165,7 +165,7 @@ Die Integration liest Preisdaten aus zwei WestfalenWind-Endpunkten:
 
 Die Daten werden über einen Coordinator geladen, normalisiert und zu kompakten Forecast-Intervallen zusammengefasst. Wenn benachbarte Intervalle denselben Preis haben, werden sie zu einem gemeinsamen Forecast-Eintrag zusammengezogen.
 
-Der Zustand beider Sensoren entspricht jeweils dem Preis des nächsten Intervalls. Die vollständige Forecast-Liste wird als Attribut bereitgestellt.
+Der Zustand beider Sensoren entspricht jeweils dem Preis des aktuellen Intervalls. Die vollständige Forecast-Liste wird als Attribut bereitgestellt.
 
 ### Projektstruktur
 
